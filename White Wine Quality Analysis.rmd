@@ -1,0 +1,856 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(reshape2)
+#library(tidyr)
+library(GGally)
+```
+# White Wine Quality Analysis
+#####In the subsequent section we are going to analyse the dataset for the white wine. 
+
+#####Loading the dataset into the R. Analysing the dataset length, variables names and its summary.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+rm(list = ls())
+ds <- read.csv('G:/Manjeet/Nano degree/EDA with R/EDA Course Materials/wineQualityWhites.csv')
+
+print("Dataset Length : ")
+dim(ds)
+names(ds)
+str(ds)
+summary(ds)
+```
+
+##### Looking at the dataset summary above, we can see that other than the factor variable('quality'), we 11 variables around which we have 4898 observations.
+
+
+#Univariate Analysis: 
+#####In this section we will perform univariate analysis of each variable in the white wine dataset.
+
+## 1. Fixed Acidity
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(fixed.acidity)) +
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 0.05) + 
+  xlim(3,12)
+
+summary(ds$fixed.acidity)
+```
+
+##### Not much useful can be inferred from it, but we can see that most sample has acidity between 6-7, with maximum of 10 units.
+
+
+##2. Volitile Acidity
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(volatile.acidity)) +
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 0.01)# + 
+  xlim(3,12)
+
+summary(ds$volatile.acidity)
+```
+
+#####It is also a normal distribution, with maximum around 0.3unit.
+
+##3. Citric Acid
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(citric.acid)) + 
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 0.025) + 
+  xlim(0,1)
+ 
+summary(ds$citric.acid)
+```
+
+
+##4. Residual Sugar
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(residual.sugar)) +
+  geom_histogram(color = 'black', fill= 'blue', binwidth = 0.5) +
+  xlim(0,25)
+ 
+summary(ds$residual.sugar)
+```
+
+#####It can be approximated as exponential decay towards poisive axis. It shows that around half of wine samples has a low amount of residual sugar in it. 
+
+##5. Chlorides
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(chlorides)) + 
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 0.005) +
+  xlim(0,0.25)
+ 
+summary(ds$chlorides)
+```
+
+##### The width of the curve is quit narrow, means that chloride content is more or less similar in most of the samples. Very few of them have quiet high amount of chloride, which can regarded as outlier. This can be verified by statistical results, showing 3rd quantile at 0.05.
+
+##5. Free Sulphur
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(free.sulfur.dioxide)) + 
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 1) +
+  xlim(2,120)
+ 
+summary(ds$free.sulfur.dioxide)
+```
+
+#####This has a quiet wider distribution, means free sulfur dioxide amount is quiet varied across the sample. This can be significantly related to the sample quality.
+
+
+##6. Total Sulphur Dioxide
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(ds$total.sulfur.dioxide)) + 
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 1) +
+  xlim(9,250)
+ 
+summary(ds$total.sulfur.dioxide)
+```
+
+#####Just like free sulfur dioxide, total sulfur dioxide distribution is also quiet spread across the sample, with peak around 120 units. AThis can also be quiet related to the quality of sample wine.
+
+##7. Density
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(density )) + 
+  geom_histogram(fill = 'blue',color = 'black',binwidth = 0.00025) +
+  xlim(0.987,1.01)
+# facet_wrap(~quality)
+
+summary(ds$density)
+```
+
+#####  Unlike the other features discussed above, the density distribution has very low number of outliers. This is understood since density of sample cannot by an error or exception raise/fall significantly.
+
+
+##8. pH
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(pH, color = qualit)) + 
+  geom_histogram(fill = 'blue',color = 'black',binwidth = 0.01)#+ 
+  xlim(0,25)
+ 
+summary(ds$pH)
+```
+
+#####pH is property which depends on concentration of other ingredients, wich affects the overall acidity of the sample. If other ingredients vary, pH will vary, hence it has a wide spectrum in itself. For a good quality wine, a high value pH (means lesser acidic) is required.
+
+###9.0 Sulphates
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(sulphates)) + 
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 0.005) #+
+  xlim(0,25)
+ 
+summary(ds$sulphates)
+```
+
+#####It has peak around 0.5, with significant positive outliers.
+
+###10. Alcohol
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(alcohol)) + 
+  geom_histogram(color = 'black', fill= 'blue',binwidth = 0.1)#+xlim(0,25)
+ 
+summary(ds$alcohol)
+```
+
+##### THe alcohol content is between 9% to 14%, mostly dominated in 10-12% region. Higher is the quantity of alcohol better ie the quality of wine as per general rule. it is one of the most important feature deciding the quality of sample.
+
+
+## 11. Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(quality)) +
+  geom_bar() +
+  scale_y_log10(breaks = c(1,10,100,1000,10000))
+
+table(ds$quality)
+```
+
+#####It can be seen that sample distribution is highly non-uniform, with most samples are of around middle quality. Both ver high quality and very low quality has significantly less samples (less than 5%). Hence this is not a good sample to analyse and arrive at correct conclusions. Because of lack of samples, better comparisons of features across different qualities cannot be performed. Theoratically it is suggested that, it is highly advisable to study such samples.
+
+
+#Univariate Analysis: Results
+###What is the structure of the database?
+#####There are 4898 samples in the dataset with 12 features (fixed Acidity, Volatile Acidity, Citric Acid, Residual Sugar, Chloride, Free Sulphur Dioxide, Total Sulphur Dioxide, Density, pH, Sulphates, Alcohol and Quality). The variable quality is an ordered factor variables with the following levels.
+
+
+#####Worst -----> Best
+#####3 4 5 6 7 8 9
+
+###What are important feature of interest in the Database?
+##### The most important features of interest in the database is the 'quality' parameter. The other important features that looks relevant are 'Alcohol', 'density', 'chlorides' and 'sulphur dioxide'and their impact on quality of the sample.
+
+###Any other inferences?
+#####Since the saples corresponding to quality no. 3,4,8 and 9 is very low, especially 9(best quality) sample, the comparison among them cannot be correctly justified. For a healthy comparison and conclusions, it os required to have adequate samples in each level of a catagory.  
+
+
+#Bivariate plot section.
+#####Uptil now we have only 1 ordered factor variable i.e. 'quality'. For a better bivariate and multivariate analysis, a more than one factor variable greatly helps to get more insight. But in this sample almost all of the variable looks independent in contributing towards quality. But 'density' is an another parameter that can have a relationship with others independent parameter. So i can convert density into an ordered factor by splitting it into ranges. 
+
+###Creating new variable 'density_factor'
+```{r}
+summary(ds$density)
+
+ds$density_factor = cut(ds$density, c(0.986, 0.990, 
+                                      0.994,0.998, 1.04))
+summary(ds$density_factor)
+```
+
+###Initiating Bivariate Analysis
+```{r message=FALSE, warning=FALSE, fig.width= 22, fig.height=10}
+ggpairs(ds[sample.int(nrow(ds),1000),2:14])
+```
+
+##### From above it can be inferred that the most variables has minimum correlation with others except than quality, or density to some extent. Other than that some correlation is expected between sugar and density, sulphur dioxide
+
+###Generating correlation MAtrix :
+#####Correlation matrix will give us a slight picture of relationship of one variable with other, that will help us in choosing the right variables for further analysis
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width= 12, fig.height=6}
+
+#round(cor(ds[,2:13]),2)
+ggcorr(ds[, 2:13], label = TRUE,hjust = 0.8, label_size = 4)
+```
+
+#####It can be seen that 'quality' of wine depends strongly on alcohol content, density and also to amount of chloride, sulphur and acidity of sample. Hence these re important variable that can be picked for analysis.
+
+
+###Transforming 'quality' to factor variable
+##### Looking at the dataset it looks that the 'quality' is a factor variable but represented as 'int' in the dataset. Hence we will first convert it into a factor variable. This will help us in studying the relationship of all the other variables with this factor variable which represents the quality of the wine. Following is the summary of the dataset after creating two new factor variable.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ds$quality_factor <-  factor(ds$quality)  
+str(ds)
+```
+
+
+
+##1. Residual Sugar vs Sulphur Dioxide
+##### Residual Sugar and sulfur Dioxide showed higher correlation with each other statistically, hence it would be justified to plot and find the graphical relationship.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+ggplot(ds, aes(total.sulfur.dioxide,residual.sugar)) + 
+  geom_point(alpha = 0.1, size = 1) +
+  coord_cartesian(ylim=c(0,25))
+ 
+cor.test(ds$total.sulfur.dioxide, ds$residual.sugar)
+```
+
+#####THe correlation of 0.4 shoes some relationship between total sulphur dioxide and sugar. This may be because total sulphur dioxide has two parts : Free and Bound. The bound part is the one which is also produced during fermentation and some parts also get binded with the sugar. 
+
+####Ploting approximate relationship
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(ds, aes(total.sulfur.dioxide,residual.sugar)) + 
+  geom_smooth(color = 'red') +
+  coord_cartesian(ylim=c(0,15))
+ 
+```
+
+##2. Residual Sugar vs Density
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(density,residual.sugar)) + 
+  geom_point(alpha = 0.1) +
+  coord_cartesian(ylim=c(0,25), 
+                  xlim = c(min(ds$density), 1.005))
+ 
+cor.test(ds$density, ds$residual.sugar)
+```
+
+#####High correlation of 0.84 is beacuse sugar concentration of sugar is directly proportional to density. Higher the sugar amount higher is the wieght of sample. The smooth approximate curve following depicts the exactly the same relationship
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(density,residual.sugar)) + 
+  geom_point(alpha = 0.1, size = 1) +
+  geom_smooth(color = 'red', method = 'loess') + 
+  coord_cartesian(ylim=c(0,25), 
+                  xlim = c(min(ds$density), 1.005))
+ 
+```
+
+###3. Alcohol vs Density
+#####Similarl alcohol is lighter than water, hence higher alcohol must corresponds to lower density. Thisis exactky depicted in graph below.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(density,alcohol)) + 
+  geom_point(alpha = 0.1, size =1) +
+  geom_smooth(mothod = 'loess') +
+  coord_cartesian(ylim = c(7.5,15), 
+                  xlim = c(min(ds$density), 1.005))
+ 
+cor.test(ds$density, ds$alcohol)
+```
+
+
+###4. Sulphur Dioxide vs Density
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(total.sulfur.dioxide,x = density)) + 
+  geom_point(alpha= 0.1, size = 1) +
+  geom_smooth(method = 'loess') +
+  coord_cartesian(ylim = c(0,250), 
+                  xlim = c(min(ds$density), 1.005))
+ 
+cor.test(ds$total.sulfur.dioxide, ds$density)
+```
+
+###5. Sulphate vs Density
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(density,sulphates)) + 
+  geom_point(alpha = 0.1, size = 1) +
+  geom_smooth(method = 'loess') +
+  coord_cartesian(ylim = c(0.2,1), 
+                  xlim = c(min(ds$density), 1.005))
+ 
+  cor.test(ds$density, ds$sulphates)
+```
+
+#####Sulphates has virtually no relationship with density.
+
+###6. Chlorides vs Density
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(density,chlorides)) + 
+  geom_point(alpha = 0.1, size = 1) +
+  geom_smooth(method = 'loess') +
+  coord_cartesian(ylim = c(0,0.07), 
+                  xlim = c(min(ds$density), 1.005))
+ 
+  cor.test(ds$density, ds$chlorides)
+```
+
+## Ploting relationship with Quality variable 
+##### This section will help in evaluating the exact contribution of each variable to the quality of the wine.
+###1. fixed Acidity vs Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(quality,fixed.acidity)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim=c(6,9)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+
+```
+
+
+###2. Volatile Acidity vs Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ds, aes(quality,volatile.acidity)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim=c(0.2,0.5)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+
+```
+
+#####Volitile acidity, shows minimal variance with quality of sample. It shows high fluctualtion and no trend.
+
+
+###3. Citric Acid vs Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(quality,citric.acid)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim=c(0.2,0.46)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+```
+
+#####It looks as if higher quality of wine, must have slightly higher amount of citric acid, as compared to other sample. Though this amount must not too high as it will then reduce the pH of the wine.
+
+###4. Residual Sugar vs Quality
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(quality,residual.sugar)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim=c(0.2,12)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+```
+
+###5. Chlorides vs Quality
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(quality,chlorides)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian( ylim= c(0.02,0.055)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+
+```
+###Chlorides look strongly related with wine quality. The trend pattern shows that as the quality of wine increases, chloride concentration decreases. 
+
+###6. Sulfur Dioxide vs Quality
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(x=quality,y=total.sulfur.dioxide)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim = c(80,220)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+
+```
+
+###7. Density vs Quality
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(x=quality,y=density)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim = c(0.99,0.997)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+
+```
+
+
+###8. pH vs Quality
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(x=quality,y=pH)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim = c(3,3.4)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+
+```
+####It can be seen that, the good quality wine has higher pH valur, a significantly lower density (because of high alcohol, low SO2, low sugar as descussed in previous section) and slightly reduced sulphur dioxide. The SO2 content in poorest qualit sample is quiet high.
+
+###9. Sulphates vs Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(x=quality,y=sulphates)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim = c(0.35,0.6)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+```
+
+#####The sulphates concentrations looks to have negligeble effect on quality of wine sample. It was seen earlier that its relationship with density is also non-significant.
+
+###10. Alcohol vs Quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(ds, aes(x=quality,y=alcohol)) + 
+  geom_boxplot(color = 'black', aes(fill=quality_factor)) +
+  coord_cartesian(ylim = c(9,13)) +
+  scale_fill_brewer(type='seq',
+                   guide=guide_legend(title='Quality Index'))
+
+```
+
+#####Alcohol, as expected has the highest correlation with the quality of the sample. THe best quality sample has the highest mean amount of alcohol. But there is strange observation to see that, the quality index 3 and 4 has higher mean alcohol than that of quality index 5. I feel that despite good alcohol amt it had other factors (eg high chloride or low pH, high SO2 etc) that contrbuted to lower quality index. 
+
+
+###Bivariate Plot Analysis: Conclusions
+
+###How did the feature(s) of interest vary with other features in the dataset?
+##### This section was divide in two parts. In the first part the important features were compared with other features in the dataset. In the second part, all of the features were then analysed with the quality of the wine samples, to study how they varied with increasing quality.
+##### Firstly we found that the residual sugar was strongly related with total sulfur dioxide and density.Also higher sulphur dioxide and high chlorides corresponded to higher density. Features like Sulphates, free acidity has least relationchip with any other feature and even on quality.
+
+###What was the strongest relationship you found?
+##### The strongest relationship found was between residual sugar and density, and of alcohol content and density.
+
+###Which feature has the least relationship with other?
+#####Sulphates has the least relationship with any other features in the dataset.
+
+
+
+
+
+#Multivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+quality_grp <- group_by(ds, quality)
+
+mean_ds_ByQuality <- summarise(quality_grp,
+                               mean_density = median(density),
+                               mean_sulfurDioxide = median(total.sulfur.dioxide),
+                               mean_chloride = median(chlorides),
+                               mean_sugar = median(residual.sugar),
+                               mean_citricAcid = median(citric.acid),
+                               mean_pH= median(pH),
+                               mean_alcohol = median(alcohol))
+
+#mean_ds_ByQuality
+
+
+
+```
+
+
+#####In the next section, i will analyse the samples features like chlorides, SO2, pH, alcohol etc in terms of quality and density of the sample. This is because only these two variable are maximum dependent on other variables as compared to other. All other variables are significantly independent with each others. The density is expressed in terms of newly created factor variable density_factor, in which i have catagorised density in terms of range.
+
+
+
+### 1. Mean Alcohol vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+ggplot(ds, aes(x=quality, y= alcohol)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.8, size = 1) +
+  geom_smooth(aes(color = density_factor), stat = 'summary', fun.y = mean, linetype = 1, size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  scale_color_brewer(type='seq')
+
+```
+
+
+### 2. Mean Chlorides vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+ggplot(ds, aes(x=quality, y= chlorides)) +
+  geom_jitter(aes(color = density_factor), alpha = 1, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean,aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1))+ 
+  coord_cartesian(ylim = c(0.02,0.065))+
+  scale_color_brewer(type='seq')
+
+```
+
+##### Alcohol and chlorides has strong correlation with quality of sample but in opposite direction. Alcohol has stong positive correlation, while chloride has negative correlation, as depeicted in graphs. MOreover, alcohol has a strong relationship with density, with higher density having low alcohol and viceversa. But chlorides has very less relationship with density.
+
+
+
+### 3. Mean Sulphur Dioxide vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(x=quality, y= total.sulfur.dioxide)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.5, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean, aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian(ylim = c(50,250))+
+  scale_color_brewer(type='seq')
+
+```
+
+
+### 4. Mean pH vs quality @Different Density  
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(x=quality, y= pH)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.8, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean,aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian(ylim = c(2.9,3.4))+
+  scale_color_brewer(type='seq')
+
+```
+
+##### pH has neligeble correlation with density of the sample. But it do has good relation with density. Higher quality wine demands ro be lesser acidic i.e. hiher pH, ehich is almost reflected in the plot.
+
+
+### 5. Mean Citric Acid vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(y=citric.acid, x= quality)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.8, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean, aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian(ylim = c(0.2,0.5))+
+  scale_color_brewer(type='seq')
+
+```
+
+##### A good quality wine demands some higher amount of citric acid in it, which gives little non sweat but sour taste to the wine. Also it is seen that citric acid has good correlation with density, having low amount in samples with low density and vice-versa.
+
+
+### 6. Mean Residual Sugar vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(y=residual.sugar, x= quality)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.5, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean, aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian(ylim= c(0,22)) +
+  scale_color_brewer(type='seq')
+  
+
+```
+
+#####Sugar level cannot be high for a good quality wine. Which is what exactly seen in the plot. With lower density samples has a low amount of sugar also.
+
+
+
+### 7. Mean Fixed Acidity vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(y= volatile.acidity, x= quality)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.5, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean, aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian(ylim = c(0.15,0.6)) +
+  scale_color_brewer(type='seq')
+
+```
+
+##### Very lesser correlation seen, though the acidity level has a slight decrease with increasing quality.
+
+
+### 8. Mean Sulphates vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(y= sulphates, x= quality)) +
+  geom_jitter(aes(color = density_factor), alpha = 0.5, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean, aes(color = density_factor), size = 1.25) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian(ylim = c(0.3,0.8))+
+  scale_color_brewer(type='seq')
+
+```
+
+##### Sulphates overall has minimal effect over quality. Though some hiher density, high quality samples has high sulphate value.
+
+### 8. ScatterPlot- Alcohol vs quality @Different Density       
+##### Plotting chlorides and alcohol levels at different levels of quality 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ds$quality_factor <- factor(ds$quality)
+ggplot(ds, aes(y= chlorides, color = quality_factor))+
+  geom_point(alpha = 0.8, aes(x = alcohol)) +
+  geom_line(aes(x=1.1*round(alcohol/1.1)), 
+            stat = 'summary', fun.y = mean, size= 1.25) +
+  coord_cartesian(ylim = c(0.02,0.12)) +
+  scale_x_continuous(breaks = seq(3,14,1)) +
+  scale_color_brewer(type = 'seq')
+```
+
+##### THis is quiet zig-zag and almost unclear. Hence will reaarange the quality factor bucket, and also generate smooth line.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+
+ds$quality_factor <- cut(ds$quality, c(2,5,7,9))
+ggplot(ds, aes(y= chlorides, x=alcohol))+
+  geom_point( alpha = 1, aes(shape = (quality_factor), color = quality_factor )) + 
+  geom_smooth(se = FALSE, size = 1.5, aes(color = quality_factor)) +
+  coord_cartesian(ylim = c(0.02,0.06)) +
+  scale_x_continuous(breaks = seq(8,14,1)) +
+  scale_color_brewer(type = 'seq', palette = 1) +
+  theme(panel.background = element_rect(fill = 'grey60', colour = 'black')) 
+
+```
+
+
+
+### 9. ScatterPlot- SO2 vs quality @Different Density  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE } 
+ggplot(ds, aes(y= total.sulfur.dioxide, x= quality, color = density_factor)) +
+  geom_jitter() +
+  geom_smooth(stat = 'summary', fun.y = mean, size= 1.25) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  scale_y_continuous(breaks = seq(40,260,20), limits = c(40,260)) +
+  scale_color_brewer(type = 'seq') +
+  theme(panel.background = element_rect(fill = 'grey60', colour = 'black')) 
+
+```
+
+###Creating Normalised DataSet
+
+
+```{r}
+normalize <- function(x) {
+  return(abs((x - min(x))/(max(x)-min(x))))
+}
+
+dsNorm <- as.data.frame(lapply(ds[,2:12], normalize))
+dsNorm$quality <- ds$quality
+dsNorm$density_factor <- ds$density_factor
+```
+
+#####By creating a normalised dataset with value (0,1), it enables us in ploting all (or most) of the features in a single chart. In the subsequent section, i have created two charts, where one charts shows mean variation of features that do not relate with the quality. The other chart shows for dominent features or those influencing quality by small or high amount. 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(dsNorm, aes(x = quality)) +
+  geom_line( aes(y = volatile.acidity, color = 'V Acidity'), 
+             stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y = fixed.acidity, color = 'Fix Acidity'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y = sulphates, color = 'Sulphates'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y = free.sulfur.dioxide, color = 'Free SO2'), 
+              stat = 'summary', fun.y = mean) +
+  scale_colour_manual("", 
+                      breaks = c("V Acidity","Fix Acidity","Sulphates", 
+                                 "Free SO2"),
+                      values = c("V Acidity"="blue", "Fix Acidity"="red",
+                                 "Sulphates"= "green", "Free SO2"="pink")) +
+  scale_x_continuous(breaks = seq(3,9,1)) + 
+  coord_cartesian() + 
+  ylab("Normalised Features") 
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(dsNorm, aes(x = quality)) +
+  geom_line(aes(y= chlorides, color = 'chlorides'), 
+             stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= alcohol, color = 'alcohol'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= citric.acid, color = 'citric.acid'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= total.sulfur.dioxide, color = 'total.sulfur.dioxide'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= density, color = 'density'), 
+              stat = 'summary', fun.y = mean) +
+  scale_colour_manual("", 
+                      breaks = c("chlorides","citric.acid","alcohol", 
+                                 "total.sulfur.dioxide","density"),
+                      values = c("chlorides"="blue", "citric.acid"="red",
+                                 "alcohol"= "green", "total.sulfur.dioxide"="brown", "density"="pink")) +
+  scale_x_continuous(breaks = seq(3,9,1)) + 
+  coord_cartesian() + 
+  ylab("Normalised Features") 
+```
+
+###Multivariate Analysis: REsults
+
+### Did you performed any modification with the dataset?
+##### I performed data normalisation on the dataset. THis helps in observing plots and variation of all the features on a single plot completely.
+
+
+
+
+
+
+
+#Final Plots and Summary
+
+##Plot One : Factors with less/No impact on quality
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+p1<- ggplot(dsNorm, aes(x = quality)) +
+  geom_line( aes(y = volatile.acidity, color = 'V Acidity'), 
+             stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y = fixed.acidity, color = 'Fix Acidity'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y = sulphates, color = 'Sulphates'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y = free.sulfur.dioxide, color = 'Free SO2'), 
+              stat = 'summary', fun.y = mean) +
+  scale_colour_manual("Features", 
+                      breaks = c("V Acidity","Fix Acidity","Sulphates", 
+                                 "Free SO2"),
+                      values = c("V Acidity"="blue", "Fix Acidity"="red",
+                                 "Sulphates"= "green", "Free SO2"="pink")) +
+  scale_x_continuous(breaks = seq(3,9,1)) + 
+  coord_cartesian() + 
+  ylab("Normalised Features") + xlab("Wine Quality") +
+  labs(title="Features Not influencing Quality")
+  
+ 
+p2<- ggplot(dsNorm, aes(x = quality)) +
+  geom_line(aes(y= chlorides, color = 'chlorides'), 
+             stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= alcohol, color = 'alcohol'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= citric.acid, color = 'citric.acid'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= total.sulfur.dioxide, color = 'total.sulfur.dioxide'), 
+              stat = 'summary', fun.y = mean) +
+  geom_smooth(aes(y= density, color = 'density'), 
+              stat = 'summary', fun.y = mean) +
+  scale_colour_manual("Features", 
+                      breaks = c("chlorides","citric.acid","alcohol", 
+                                 "total.sulfur.dioxide","density"),
+                      values = c("chlorides"="blue", "citric.acid"="red",
+                                 "alcohol"= "green", "total.sulfur.dioxide"="brown", "density"="pink")) +
+  scale_x_continuous(breaks = seq(3,9,1)) + 
+  coord_cartesian() + 
+  ylab("Normalised Features") + xlab("Wine Quality") +
+  labs(title="Features influencing Quality")
+
+grid.arrange(p1, p2, ncol=2)
+
+```
+
+####Discription: 
+#####This plot contains all important variables/factors that has some correlation with the quality of the wine.  It can be seen that there is a falling trend for Sulfur Dioxide, DEnsity and CHloride with increasing quality. WHeras Alcohol, Citric Acid has rising trend. Variables like valitile and fixed acidity, free SO2 and Sulphates has minimal correlation with quality of wine. Sulphates content has the least correlation of all and the content is almost similar.
+
+
+## Plot Two : Alcohol Quality at different density
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+ggplot(ds, aes(x=quality, y= alcohol, color = density_factor)) + 
+  geom_jitter(aes(color = density_factor), alpha = 0.5, size = 1) +
+  geom_smooth( stat = 'summary', fun.y = mean,size = 1.25, aes(color = density_factor)) +
+  geom_smooth(stat = 'summary', fun.y = mean, color = 'black', linetype = 2) +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  coord_cartesian() +
+  labs(title="Alcohol @ different Density vs Quality", color = "Density Bucket") +
+  xlab("Wine Quality") + ylab("Alcohol (%)") +
+  scale_color_brewer(type = 'seq') +
+  theme(panel.background = element_rect(fill = 'grey60', colour = 'black'))
+  
+#+  facet_wrap(~density_factor)
+
+
+```
+
+####Discription: 
+#####White Wine with higher alcohol content has the higher quality index. This clubbed with density, it is found that higher quality wine has high value of alcohol with lesser overall density.
+
+
+
+##Plot Three : CHloride vs Alcohol at different qualities
+
+```{r echo=FALSE, message=FALSE, warning=FALSE} 
+
+ds$quality_factor <- factor(cut(ds$quality, c(2,5,7,9)),
+                            labels = c("Low", "Medium", "High"))
+
+ggplot(ds, aes(y= chlorides, x=alcohol,color = quality_factor))+
+  geom_point( alpha = 1) + 
+  geom_smooth(se = FALSE, size = 1.5) +
+  coord_cartesian(ylim = c(0.02,0.06)) +
+  scale_x_continuous(breaks = seq(8,14,1)) +
+  xlab("Alcohol (%)") +
+  ylab("Chlorides (gms/ dm^3)") +
+  labs(color = " Wine Quality")+
+  scale_color_brewer(type = 'seq', palette = 1) +
+  theme(panel.background = element_rect(fill = 'grey60', colour = 'black')) 
+  #theme(plot.background = element_rect(fill = 'green', colour = 'red'))
+  
+ 
+```
+
+####Discription:
+#####We see the trend that the level of Chlorides decreases with the rise of alcohol levels by volume. This is prominent in medium to high quality wines. For low quality wones, we notice a rise in Chloride levels beyond the 12% alcohol mark. We notice that the Chloride levels across all wine qualities are nearly the same in the 10%-12% alcohol band. However, below 10%, and higher than 12%, lower quality wines have higher levels of Chlorides. This may be a case of hidden factors though. M. S Coli et. al show that the Chloride levels in red wines are influenced by terroir, and grape type. Since these are not provided in the data set, it could very well be a case of the scorers preferring wine from certain areas of the world.
+
+
+
+#Reflection
+
+#####Based on the EDA and further analysis that I did for this dataset, I am convinced that Alcohl percentage is the most important factor to decide the quality of White wine. One important factor that contributes to Alcohol percentage is the remaining sugar in wine after fermentation so that the more sugar left after fermentation, the less the percentage of alcohol will be in the wine.
+
+#####Other important factors for deciding the quality of a white wine are SO2 and Chlorides. Both has negative effect on the quality of white wines!
+
+
+#####I used correlation values to find relationships between attributes. Where significant skew was present, I took logs. I found bimodality in a feature, but it appeared that it was not related to quality; it is likely that some confounders are causing the bimodality, and this is worth investigating further.
+
+#####With all the quality levels, the plots started looking messy. To make things clearer, I re-categorised wine quality into three categories. This helped quite a lot. I found interesting trends in the relationships between wine quality, alcohol levels, and chloride levels. 
+#####In future i could develop a predtive model in order to perform the test to predict the wine sample's quality based on  the given set of fetures. This will perhaps more open the mind, making us to think better. This dataset has many relationship and correlations can be extracted from data and in this project we investigated very obvious relationships between wine qualities and its properties.
